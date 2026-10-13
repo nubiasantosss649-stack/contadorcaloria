@@ -13,6 +13,18 @@ export function useAuthMessages() {
       switch (code) {
         case 'invalid_credentials':
           return t('auth.errors.invalidCredentials');
+        case 'email_not_confirmed':
+          return t('auth.errors.emailNotConfirmed');
+        case 'weak_password':
+          return t('auth.errors.weakPassword');
+        case 'same_password':
+          return t('auth.errors.samePassword');
+        case 'rate_limited':
+          return t('errors.rateLimited');
+        case 'link_invalid':
+          return t('auth.callback.invalidDescription');
+        case 'network':
+          return t('errors.network');
         case 'not_configured':
           return t('auth.notConfigured.title');
         default:

@@ -8,15 +8,16 @@ import {
   Badge,
   Button,
   Card,
-  InDevelopmentNotice,
   ListGroup,
   ListItem,
   Screen,
   ScreenHeader,
   Text,
 } from '@/components/ui';
+import { useAccount, useHasPro } from '@/features/account/hooks';
 import { useAuth } from '@/features/auth/auth-provider';
 import { usePreferences } from '@/features/preferences/preferences-provider';
+import { formatWeight } from '@/lib/units';
 
 function initialsOf(value: string): string {
   const parts = value.trim().split(/\s+/).filter(Boolean);
@@ -28,12 +29,15 @@ function initialsOf(value: string): string {
 export default function ProfileScreen() {
   const { t } = useTranslation();
   const { session, isPreview, signOut } = useAuth();
-  const { resolvedLanguage } = usePreferences();
+  const { resolvedLanguage, unitSystem } = usePreferences();
+  const account = useAccount();
+  const { hasPro } = useHasPro();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
-  const [notice, setNotice] = useState(false);
 
-  const metadata = session?.user.user_metadata as { display_name?: string } | undefined;
-  const name = metadata?.display_name || session?.user.email || t('profile.guest');
+  const profile = account.data?.profile;
+  const goals = account.data?.goals;
+  const name = profile?.displayName || profile?.email || session?.user.email || t('profile.guest');
+  const latestWeight = account.data?.latestWeight;
 
   return (
     <Screen edges={['top']}>
@@ -46,26 +50,49 @@ export default function ProfileScreen() {
           </Text>
         </View>
         <View className="flex-1 gap-1">
-          <Text variant="heading" numberOfLines={1}>
+          <Text variant="heading" numberOfLines={1} testID="profile-name">
             {name}
           </Text>
-          {session?.user.email && metadata?.display_name ? (
+          {profile?.email && profile.displayName ? (
             <Text variant="bodySmall" tone="muted" numberOfLines={1}>
-              {session.user.email}
+              {profile.email}
             </Text>
           ) : null}
           <View className="flex-row gap-2">
-            <Badge label={t('profile.freePlan')} tone="neutral" />
+            <Badge
+              label={hasPro ? t('profile.proPlan') : t('profile.freePlan')}
+              tone={hasPro ? 'solid' : 'neutral'}
+            />
             {isPreview ? <Badge label={t('auth.preview.badge')} tone="warning" /> : null}
           </View>
         </View>
       </Card>
 
-      <View className="gap-2">
-        <InDevelopmentNotice description={t('profile.bodyDataDescription')} />
-      </View>
+      <ListGroup title={t('profile.nutrition')}>
+        <ListItem
+          icon="flag-outline"
+          title={t('profile.goals')}
+          value={goals ? `${goals.dailyCalorieTarget} ${t('common.kcal')}` : t('home.goalNotSet')}
+          onPress={isPreview ? undefined : () => router.push('/goals')}
+          testID="profile-goals"
+        />
+        <ListItem
+          icon="scale-outline"
+          title={t('profile.weight')}
+          value={
+            latestWeight ? formatWeight(latestWeight.weightKg, unitSystem, resolvedLanguage) : '—'
+          }
+          onPress={() => router.push('/progress')}
+        />
+      </ListGroup>
 
       <ListGroup>
+        <ListItem
+          icon="person-outline"
+          title={t('profile.editProfile')}
+          onPress={isPreview ? undefined : () => router.push('/edit-profile')}
+          testID="profile-edit"
+        />
         <ListItem
           icon="sparkles-outline"
           title={t('profile.subscription')}
@@ -83,9 +110,10 @@ export default function ProfileScreen() {
           onPress={() => router.push('/language')}
         />
         <ListItem
-          icon="help-buoy-outline"
-          title={t('profile.help')}
-          onPress={() => setNotice(true)}
+          icon="shield-outline"
+          title={t('profile.account')}
+          onPress={isPreview ? undefined : () => router.push('/account')}
+          testID="profile-account"
         />
       </ListGroup>
 
@@ -124,14 +152,6 @@ export default function ProfileScreen() {
             />
           </>
         }
-      />
-      <AppModal
-        visible={notice}
-        onClose={() => setNotice(false)}
-        icon="construct-outline"
-        title={t('common.inDevelopment')}
-        description={t('common.inDevelopmentDescription')}
-        actions={<Button label={t('common.ok')} onPress={() => setNotice(false)} />}
       />
     </Screen>
   );

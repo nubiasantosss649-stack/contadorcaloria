@@ -21,6 +21,7 @@ const enUS = {
     inDevelopmentDescription:
       'This feature is not available yet. It will be connected in an upcoming phase.',
     errorTitle: 'Something went wrong',
+    retry: 'Try again',
   },
   splash: {
     tagline: 'Smart calorie tracking',
@@ -70,6 +71,8 @@ const enUS = {
       forgotPassword: 'Forgot password?',
       noAccount: "Don't have an account?",
       createAccount: 'Create account',
+      resendConfirmation: 'Resend confirmation email',
+      confirmationResent: 'Confirmation email sent',
     },
     register: {
       title: 'Create your account',
@@ -101,6 +104,9 @@ const enUS = {
       nameRequired: 'Enter your name.',
       invalidCredentials: 'Incorrect email or password.',
       generic: "We couldn't complete the request. Please try again.",
+      emailNotConfirmed: 'Confirm your email before signing in. Check your inbox.',
+      weakPassword: 'This password is too weak. Use a longer, less common password.',
+      samePassword: 'The new password must be different from the current one.',
     },
     notConfigured: {
       title: 'Backend not configured',
@@ -112,6 +118,17 @@ const enUS = {
       description:
         'Developer preview: browse the screens without an account. No data is saved and nothing is real.',
       badge: 'Preview mode',
+    },
+    callback: {
+      invalidTitle: 'Link invalid or expired',
+      invalidDescription:
+        'This link has already been used or has expired. Request a new one and open it on this device.',
+    },
+    reset: {
+      title: 'Choose a new password',
+      subtitle: 'Enter a new password for your account.',
+      newPassword: 'New password',
+      submit: 'Save new password',
     },
   },
   tabs: {
@@ -142,6 +159,12 @@ const enUS = {
     proTitle: 'Unlock Caloria Fácil Pro',
     proDescription: 'Unlimited AI scans, advanced insights and more.',
     proCta: 'See plans',
+    over: 'Over goal',
+    setGoal: 'Set your daily goal',
+    incompleteMacros:
+      'Some foods have unknown macronutrient values, so these totals may be incomplete.',
+    itemCount: 'Items: {{count}}',
+    previewNotice: 'Preview mode: connect Supabase to log real meals.',
   },
   macros: {
     protein: 'Protein',
@@ -170,6 +193,20 @@ const enUS = {
     notSavedTitle: 'Saving is not available yet',
     notSavedDescription:
       'Meals will be stored in your account once the database is connected in the next phase. Nothing was saved.',
+    searchExample: 'e.g. rice, banana, yogurt',
+    recent: 'Recent',
+    noRecent: 'Foods you log will appear here.',
+    noResults: 'No foods found',
+    noResultsHint: 'Try another term or create the food manually with values from its label.',
+    selected: 'Selected foods',
+    portion: 'Portion (g)',
+    portionError: 'Enter a portion between 1 and {{max}} g.',
+    addPortion: 'Add portion',
+    per100g: '{{kcal}} kcal per 100 g',
+    unknownValues: 'Some values are unknown for this food and are not counted.',
+    saveWithTotal: 'Save {{count}} item(s) · {{kcal}} kcal',
+    databaseNote:
+      'Search covers foods you created and the shared catalogue. USDA and Open Food Facts integration is coming.',
   },
   scanner: {
     title: 'AI Scanner',
@@ -193,6 +230,11 @@ const enUS = {
     dayTotal: 'Day total',
     empty: 'Nothing logged',
     emptyDescription: 'Your history will appear here once meal logging is connected.',
+    editHint: 'Opens the editor to change the portion or delete.',
+    delete: 'Delete',
+    deleteConfirm: 'Delete this item from your diary?',
+    freeLimitTitle: 'Free plan: last {{days}} days',
+    freeLimitDescription: 'Upgrade to Pro to see your full history.',
   },
   progress: {
     title: 'Progress',
@@ -205,6 +247,11 @@ const enUS = {
     noDataDescription:
       'Charts will show your real weight and calorie history once tracking is connected.',
     logWeight: 'Log weight',
+    current: 'Current',
+    change: 'Change in period',
+    caloriesLast7: 'Calories · last 7 days',
+    noWeightHint: 'Log your weight to see your trend.',
+    noCaloriesHint: 'Log meals to see your daily calories.',
   },
   paywall: {
     title: 'Caloria Fácil Pro',
@@ -253,6 +300,12 @@ const enUS = {
     exitPreview: 'Exit preview',
     bodyData: 'Body data',
     bodyDataDescription: 'Height, weight and goals will be editable in the next phase.',
+    proPlan: 'Pro plan',
+    nutrition: 'Nutrition',
+    goals: 'Goals',
+    weight: 'Weight',
+    editProfile: 'Edit profile',
+    account: 'Account',
   },
   settings: {
     title: 'Settings',
@@ -274,6 +327,162 @@ const enUS = {
     about: 'About',
     version: 'Version',
     environment: 'Environment',
+  },
+  errors: {
+    network: 'No connection. Check your internet and try again.',
+    sessionExpired: 'Your session has expired. Please sign in again.',
+    validation: 'Some values are invalid. Please review them.',
+    inUse: 'This item is in use and cannot be removed.',
+    forbidden: 'You do not have permission to do that.',
+    rateLimited: 'Too many attempts. Please wait a moment and try again.',
+    generic: 'Something went wrong. Please try again.',
+  },
+  setup: {
+    title: 'Personalize your plan',
+    progress: 'Step {{current}} of {{total}}',
+    skip: 'Skip this question',
+    finish: 'Save and start',
+    finishWithoutGoal: 'Finish without a goal for now',
+    notInformed: 'Not informed',
+    useImperial: 'Use lb / ft instead',
+    useMetric: 'Use kg / cm instead',
+    steps: {
+      goal: { title: 'What is your goal?', subtitle: 'This guides your calorie estimate.' },
+      age: { title: 'How old are you?', subtitle: 'Age affects your energy needs.' },
+      sex: {
+        title: 'Sex for the calculation',
+        subtitle:
+          'The equation we use differs for female and male bodies. You can skip and set your goal manually.',
+      },
+      height: { title: 'How tall are you?', subtitle: 'Used only to estimate your needs.' },
+      weight: {
+        title: 'What is your current weight?',
+        subtitle: 'It becomes the first entry of your weight history.',
+      },
+      activity: { title: 'How active are you?', subtitle: 'Think about a typical week.' },
+      country: {
+        title: 'Where do you live?',
+        subtitle: 'Helps us adapt foods and units in the future.',
+      },
+      language: {
+        title: 'Preferred language',
+        subtitle: 'You can change it any time in Settings.',
+      },
+      units: {
+        title: 'Units of measurement',
+        subtitle: 'Choose how weights and heights are shown.',
+      },
+      summary: {
+        title: 'Your daily goal',
+        subtitle: 'Review the estimate or set your own target.',
+      },
+    },
+    goals: { lose: 'Lose weight', maintain: 'Maintain weight', gain: 'Gain weight' },
+    sex: { female: 'Female', male: 'Male' },
+    activity: {
+      sedentary: { title: 'Sedentary', description: 'Little or no exercise' },
+      light: { title: 'Lightly active', description: 'Exercise 1–3 days a week' },
+      moderate: { title: 'Moderately active', description: 'Exercise 3–5 days a week' },
+      active: { title: 'Very active', description: 'Hard exercise 6–7 days a week' },
+      very_active: {
+        title: 'Extremely active',
+        description: 'Physical job or training twice a day',
+      },
+    },
+    fields: {
+      age: 'Age (years)',
+      height: 'Height',
+      weight: 'Weight',
+      country: 'Country',
+      countrySearch: 'Search country',
+    },
+    errors: {
+      age: 'Enter an age between {{min}} and {{max}}.',
+      height: 'Enter a valid height.',
+      weight: 'Enter a valid weight.',
+    },
+  },
+  goals: {
+    title: 'Goals',
+    subtitle: 'Update your data to recalculate, or set your own target.',
+    bodyData: 'Your data',
+    useEstimate: 'Estimate',
+    setManually: 'Manual',
+    estimatedTarget: 'Estimated daily target',
+    perDay: 'day',
+    methodology:
+      'Mifflin-St Jeor equation × activity factor. Estimated maintenance: {{maintenance}} kcal.',
+    safetyAdjusted:
+      'We raised this target to a safe minimum. Very low-calorie diets should only be followed with professional supervision.',
+    missingTitle: 'More information needed',
+    missingDescription: 'To estimate your needs we still need:',
+    answer: 'Answer',
+    notAdultTitle: 'Estimate not available',
+    notAdultDescription:
+      'Calorie estimates are only provided for adults (18+). Talk to a health professional about your needs.',
+    manualLabel: 'Daily calorie target (kcal)',
+    manualHint: 'Minimum {{min}} kcal.',
+    manualMacros: 'Suggested split: {{protein}} g protein · {{carbs}} g carbs · {{fat}} g fat',
+    save: 'Save goal',
+    disclaimer:
+      'This is an estimate for healthy adults, not medical advice. If you are pregnant, breastfeeding, under 18 or have a health condition, consult a professional.',
+    fields: {
+      sex: 'Sex',
+      age: 'Age',
+      heightCm: 'Height',
+      weightKg: 'Weight',
+      activityLevel: 'Activity level',
+      goal: 'Goal',
+    },
+    errors: {
+      required: 'Enter a daily target.',
+      tooLow: 'For safety, the minimum target is {{min}} kcal.',
+      tooHigh: 'Enter a value up to 10,000 kcal.',
+    },
+  },
+  foods: {
+    create: 'Create food',
+    subtitle: 'Use the values from the nutrition label.',
+    brand: 'Brand (optional)',
+    barcode: 'Barcode (optional)',
+    per100g: 'Nutrition per 100 g',
+    unknownHint:
+      'Leave a macronutrient empty if you do not know it — it will be shown as unknown, never as 0.',
+    save: 'Save food',
+    mine: 'Mine',
+    errors: {
+      nameRequired: 'Enter the food name.',
+      caloriesRequired: 'Enter the calories per 100 g.',
+      caloriesRange: 'Calories per 100 g must be between 0 and 900.',
+      macroRange: 'Each macronutrient must be between 0 and 100 g.',
+      macrosExceed: 'Protein + carbs + fat cannot exceed 100 g per 100 g.',
+      barcode: 'A barcode has 6 to 14 digits.',
+    },
+  },
+  favorites: {
+    title: 'Favorites',
+    save: 'Save as favorite',
+    saveAlso: 'Also save as a favorite meal',
+    saveDescription: 'Save this meal to log it again with one tap.',
+    name: 'Favorite name',
+    empty: 'No favorite meals yet',
+    emptyHint: 'Save a meal as favorite from the diary or when adding foods.',
+    itemCount: 'Foods: {{count}}',
+    delete: 'Delete favorite',
+  },
+  account: {
+    title: 'Account',
+    memberSince: 'Member since',
+    dangerZone: 'Danger zone',
+    deleteSubtitle: 'Permanently removes your account and all your data.',
+    deleteTitle: 'Delete account?',
+    deleteDescription:
+      'Your profile, meals, foods, favorites, goals and weight history will be permanently deleted. This cannot be undone.',
+    deleteConfirmWord: 'DELETE',
+    typeToConfirm: 'Type {{word}} to confirm',
+    deleteFailed: 'We could not delete your account. Check your connection and try again.',
+    cancelSubscriptionNote:
+      'Deleting the account does not cancel store subscriptions. Cancel it in your App Store or Google Play settings.',
   },
   units: {
     kg: 'kg',

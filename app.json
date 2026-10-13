@@ -52,13 +52,22 @@
         "expo-localization",
         {
           "supportedLocales": {
-            "ios": ["en", "pt-BR", "es"],
-            "android": ["en", "pt-BR", "es"]
+            "ios": [
+              "en",
+              "pt-BR",
+              "es"
+            ],
+            "android": [
+              "en",
+              "pt-BR",
+              "es"
+            ]
           }
         }
       ],
       "expo-dev-client",
-      "expo-asset"
+      "expo-asset",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

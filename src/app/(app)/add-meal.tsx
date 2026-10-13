@@ -1,50 +1,162 @@
-import { useState } from 'react';
-import { View } from 'react-native';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import {
-  AppModal,
   Button,
   Card,
+  EmptyState,
+  Icon,
   InDevelopmentNotice,
+  ListGroup,
+  LoadingView,
   Screen,
   ScreenHeader,
   SegmentedControl,
   Text,
   TextField,
 } from '@/components/ui';
-import { MEAL_TYPES, mealTypeForHour, type MealType } from '@/features/meals/types';
+import { useAuth } from '@/features/auth/auth-provider';
+import { FoodRow } from '@/features/meals/components/food-row';
+import { formatKcal } from '@/features/meals/components/nutrient-text';
+import { PortionModal } from '@/features/meals/components/portion-modal';
+import {
+  useAddMealItems,
+  useCreateFavorite,
+  useDeleteFavorite,
+  useFavorites,
+  useFoodSearch,
+  useRecentFoods,
+} from '@/features/meals/hooks';
+import { takePendingFood } from '@/features/meals/pending-food';
+import {
+  isMealType,
+  MEAL_TYPES,
+  mealTypeForHour,
+  type Food,
+  type MealType,
+} from '@/features/meals/types';
+import { usePreferences } from '@/features/preferences/preferences-provider';
+import { useAppTheme } from '@/hooks/use-app-theme';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { useErrorMessage } from '@/hooks/use-error-message';
+import { consumedAtFor, diffInDays, formatLongDate, fromDayKey } from '@/lib/dates';
+import { calculateNutrients, sumNutrients } from '@/lib/nutrition';
 
-/** Keeps only digits and one decimal separator. */
-function sanitizeNumber(value: string): string {
-  const normalized = value.replace(',', '.').replace(/[^0-9.]/g, '');
-  const [whole = '', ...rest] = normalized.split('.');
-  return rest.length > 0 ? `${whole}.${rest.join('')}` : whole;
-}
+type BasketItem = { key: string; food: Food; grams: number };
 
 export default function AddMealScreen() {
   const { t } = useTranslation();
-  const [mealType, setMealType] = useState<MealType>(() => mealTypeForHour(new Date().getHours()));
-  const [form, setForm] = useState({ name: '', calories: '', protein: '', carbs: '', fat: '' });
-  const [notice, setNotice] = useState(false);
+  const { colors } = useAppTheme();
+  const errorMessage = useErrorMessage();
+  const { resolvedLanguage } = usePreferences();
+  const { isBackendConfigured } = useAuth();
+  const params = useLocalSearchParams<{ meal?: string; day?: string }>();
+  const day = useMemo(() => (params.day ? fromDayKey(params.day) : new Date()), [params.day]);
+  const [mealType, setMealType] = useState<MealType>(() =>
+    isMealType(params.meal) ? params.meal : mealTypeForHour(new Date().getHours()),
+  );
+  const [query, setQuery] = useState('');
+  const [tab, setTab] = useState<'recent' | 'favorites'>('recent');
+  const [basket, setBasket] = useState<BasketItem[]>([]);
+  const [selected, setSelected] = useState<Food | null>(null);
+  const [saveAsFavorite, setSaveAsFavorite] = useState(false);
+  const [favoriteName, setFavoriteName] = useState('');
 
-  const update = (key: keyof typeof form) => (value: string) =>
-    setForm((current) => ({ ...current, [key]: key === 'name' ? value : sanitizeNumber(value) }));
+  const debounced = useDebouncedValue(query, 300);
+  const search = useFoodSearch(debounced);
+  const recent = useRecentFoods();
+  const favorites = useFavorites();
+  const addItems = useAddMealItems();
+  const createFavorite = useCreateFavorite();
+  const deleteFavorite = useDeleteFavorite();
+
+  // Pick up a food created in the "create food" screen.
+  useFocusEffect(
+    useCallback(() => {
+      const created = takePendingFood();
+      if (created) setSelected(created);
+    }, []),
+  );
+
+  const totals = sumNutrients(
+    basket.map((item) =>
+      calculateNutrients(
+        {
+          calories: item.food.caloriesPer100g,
+          protein: item.food.proteinPer100g,
+          carbs: item.food.carbsPer100g,
+          fat: item.food.fatPer100g,
+        },
+        item.grams,
+      ),
+    ),
+  );
+
+  const addToBasket = (food: Food, grams: number) =>
+    setBasket((items) => [
+      ...items,
+      { key: `${food.id}-${Date.now()}-${items.length}`, food, grams },
+    ]);
+
+  const save = () => {
+    const items = basket.map((item) => ({ foodId: item.food.id, grams: item.grams }));
+    addItems.mutate(
+      { mealType, consumedAt: consumedAtFor(day), items },
+      {
+        onSuccess: () => {
+          if (saveAsFavorite && favoriteName.trim()) {
+            createFavorite.mutate({ name: favoriteName, mealType, items });
+          }
+          router.back();
+        },
+      },
+    );
+  };
+
+  const dayOffset = diffInDays(new Date(), day);
+  const dayLabel = dayOffset === 0 ? t('diary.today') : formatLongDate(day, resolvedLanguage);
+  const searching = debounced.trim().length >= 2;
+
+  if (!isBackendConfigured) {
+    return (
+      <Screen>
+        <ScreenHeader showBack closeIcon title={t('addMeal.title')} />
+        <InDevelopmentNotice description={t('home.previewNotice')} />
+      </Screen>
+    );
+  }
 
   return (
     <Screen
       keyboard
       footer={
-        <Button
-          label={t('addMeal.save')}
-          icon="checkmark"
-          onPress={() => setNotice(true)}
-          disabled={!form.name.trim()}
-          testID="add-meal-save"
-        />
+        <View className="gap-2">
+          {addItems.error ? (
+            <Text variant="bodySmall" tone="danger" center>
+              {errorMessage(addItems.error)}
+            </Text>
+          ) : null}
+          <Button
+            label={
+              basket.length > 0
+                ? t('addMeal.saveWithTotal', {
+                    count: basket.length,
+                    kcal: Math.round(totals.calories),
+                  })
+                : t('addMeal.save')
+            }
+            icon="checkmark"
+            onPress={save}
+            loading={addItems.isPending}
+            disabled={basket.length === 0}
+            testID="add-meal-save"
+          />
+        </View>
       }
     >
-      <ScreenHeader showBack closeIcon title={t('addMeal.title')} />
+      <ScreenHeader showBack closeIcon title={t('addMeal.title')} subtitle={dayLabel} />
 
       <View className="gap-2">
         <Text variant="label" tone="muted" className="px-1">
@@ -58,56 +170,174 @@ export default function AddMealScreen() {
         />
       </View>
 
-      <View className="gap-2">
-        <TextField
-          label={t('addMeal.searchPlaceholder')}
-          placeholder={t('addMeal.searchPlaceholder')}
-          icon="search-outline"
-          editable={false}
-          hint={t('addMeal.searchUnavailable')}
-        />
-      </View>
-
-      <Card className="gap-4">
-        <Text variant="subheading">{t('addMeal.manualEntry')}</Text>
-        <TextField
-          label={t('addMeal.foodName')}
-          placeholder={t('addMeal.foodNamePlaceholder')}
-          value={form.name}
-          onChangeText={update('name')}
-          testID="add-meal-name"
-        />
-        <TextField
-          label={t('addMeal.calories')}
-          value={form.calories}
-          onChangeText={update('calories')}
-          keyboardType="decimal-pad"
-          placeholder="0"
-        />
-        <View className="flex-row gap-3">
-          {(['protein', 'carbs', 'fat'] as const).map((macro) => (
-            <View key={macro} className="flex-1">
-              <TextField
-                label={t(`addMeal.${macro}`)}
-                value={form[macro]}
-                onChangeText={update(macro)}
-                keyboardType="decimal-pad"
-                placeholder="0"
-              />
+      {basket.length > 0 ? (
+        <Card className="gap-3" testID="add-meal-basket">
+          <View className="flex-row items-center justify-between">
+            <Text variant="subheading">{t('addMeal.selected')}</Text>
+            <Text variant="subheading" tone="primary">
+              {formatKcal(totals.calories, t, resolvedLanguage)}
+            </Text>
+          </View>
+          {basket.map((item) => (
+            <View key={item.key} className="flex-row items-center gap-3">
+              <View className="flex-1">
+                <Text variant="body" numberOfLines={1}>
+                  {item.food.name}
+                </Text>
+                <Text variant="caption" tone="muted">
+                  {item.grams} {t('common.grams')}
+                </Text>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('diary.delete')}
+                hitSlop={8}
+                onPress={() => setBasket((items) => items.filter((i) => i.key !== item.key))}
+              >
+                <Icon name="close-circle" size={22} color={colors.textMuted} />
+              </Pressable>
             </View>
           ))}
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: saveAsFavorite }}
+            onPress={() => setSaveAsFavorite((v) => !v)}
+            className="flex-row items-center gap-2 pt-1"
+          >
+            <Icon
+              name={saveAsFavorite ? 'checkbox' : 'square-outline'}
+              size={22}
+              color={saveAsFavorite ? colors.primary : colors.textMuted}
+            />
+            <Text variant="bodySmall">{t('favorites.saveAlso')}</Text>
+          </Pressable>
+          {saveAsFavorite ? (
+            <TextField
+              label={t('favorites.name')}
+              value={favoriteName}
+              onChangeText={setFavoriteName}
+              maxLength={80}
+              placeholder={t(`meals.${mealType}`)}
+            />
+          ) : null}
+        </Card>
+      ) : null}
+
+      <TextField
+        label={t('addMeal.searchPlaceholder')}
+        placeholder={t('addMeal.searchExample')}
+        icon="search-outline"
+        value={query}
+        onChangeText={setQuery}
+        autoCorrect={false}
+        returnKeyType="search"
+        testID="add-meal-search"
+      />
+
+      {searching ? (
+        search.isPending ? (
+          <LoadingView />
+        ) : search.isError ? (
+          <Text tone="danger">{errorMessage(search.error)}</Text>
+        ) : search.data && search.data.length > 0 ? (
+          <ListGroup>
+            {search.data.map((food) => (
+              <FoodRow key={food.id} food={food} onPress={() => setSelected(food)} />
+            ))}
+          </ListGroup>
+        ) : (
+          <Card padded={false}>
+            <EmptyState
+              icon="search-outline"
+              title={t('addMeal.noResults')}
+              description={t('addMeal.noResultsHint')}
+            />
+          </Card>
+        )
+      ) : (
+        <View className="gap-3">
+          <SegmentedControl<'recent' | 'favorites'>
+            accessibilityLabel={t('addMeal.title')}
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'recent', label: t('addMeal.recent') },
+              { value: 'favorites', label: t('favorites.title') },
+            ]}
+          />
+          {tab === 'recent' ? (
+            recent.data && recent.data.length > 0 ? (
+              <ListGroup>
+                {recent.data.map((food) => (
+                  <FoodRow key={food.id} food={food} onPress={() => setSelected(food)} />
+                ))}
+              </ListGroup>
+            ) : (
+              <Card padded={false}>
+                <EmptyState icon="time-outline" title={t('addMeal.noRecent')} />
+              </Card>
+            )
+          ) : favorites.data && favorites.data.length > 0 ? (
+            <ListGroup>
+              {favorites.data.map((favorite) => (
+                <View key={favorite.id} className="flex-row items-center gap-3 px-4 py-3">
+                  <Pressable
+                    className="flex-1 gap-0.5"
+                    accessibilityRole="button"
+                    onPress={() =>
+                      favorite.items.forEach((item) => addToBasket(item.food, item.grams))
+                    }
+                    testID={`favorite-${favorite.id}`}
+                  >
+                    <Text variant="body" className="font-inter-medium">
+                      {favorite.name}
+                    </Text>
+                    <Text variant="caption" tone="muted">
+                      {t('favorites.itemCount', { count: favorite.items.length })}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('favorites.delete')}
+                    hitSlop={8}
+                    onPress={() => deleteFavorite.mutate(favorite.id)}
+                  >
+                    <Icon name="trash-outline" size={20} color={colors.textMuted} />
+                  </Pressable>
+                </View>
+              ))}
+            </ListGroup>
+          ) : (
+            <Card padded={false}>
+              <EmptyState
+                icon="star-outline"
+                title={t('favorites.empty')}
+                description={t('favorites.emptyHint')}
+              />
+            </Card>
+          )}
         </View>
-      </Card>
+      )}
 
-      <InDevelopmentNotice description={t('addMeal.notSavedDescription')} />
+      <Button
+        label={t('foods.create')}
+        variant="outline"
+        icon="create-outline"
+        onPress={() => router.push({ pathname: '/create-food', params: { name: query.trim() } })}
+        testID="add-meal-create-food"
+      />
+      <Text variant="caption" tone="muted" center>
+        {t('addMeal.databaseNote')}
+      </Text>
 
-      <AppModal
-        visible={notice}
-        onClose={() => setNotice(false)}
-        icon="construct-outline"
-        title={t('addMeal.notSavedTitle')}
-        description={t('addMeal.notSavedDescription')}
-        actions={<Button label={t('common.ok')} onPress={() => setNotice(false)} />}
+      <PortionModal
+        food={selected}
+        onCancel={() => setSelected(null)}
+        onConfirm={(grams) => {
+          if (selected) addToBasket(selected, grams);
+          setSelected(null);
+          setQuery('');
+        }}
       />
     </Screen>
   );

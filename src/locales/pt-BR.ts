@@ -19,6 +19,7 @@ const ptBR: TranslationResource = {
     inDevelopmentDescription:
       'Este recurso ainda não está disponível. Ele será integrado em uma próxima fase.',
     errorTitle: 'Algo deu errado',
+    retry: 'Tentar novamente',
   },
   splash: {
     tagline: 'Contagem de calorias inteligente',
@@ -69,6 +70,8 @@ const ptBR: TranslationResource = {
       forgotPassword: 'Esqueceu a senha?',
       noAccount: 'Não tem uma conta?',
       createAccount: 'Criar conta',
+      resendConfirmation: 'Reenviar e-mail de confirmação',
+      confirmationResent: 'E-mail de confirmação enviado',
     },
     register: {
       title: 'Crie sua conta',
@@ -102,6 +105,9 @@ const ptBR: TranslationResource = {
       nameRequired: 'Informe seu nome.',
       invalidCredentials: 'E-mail ou senha incorretos.',
       generic: 'Não foi possível concluir a solicitação. Tente novamente.',
+      emailNotConfirmed: 'Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.',
+      weakPassword: 'Esta senha é fraca. Use uma senha mais longa e menos comum.',
+      samePassword: 'A nova senha precisa ser diferente da atual.',
     },
     notConfigured: {
       title: 'Backend não configurado',
@@ -113,6 +119,17 @@ const ptBR: TranslationResource = {
       description:
         'Prévia para desenvolvimento: navegue pelas telas sem conta. Nenhum dado é salvo e nada é real.',
       badge: 'Modo prévia',
+    },
+    callback: {
+      invalidTitle: 'Link inválido ou expirado',
+      invalidDescription:
+        'Este link já foi usado ou expirou. Solicite um novo e abra-o neste aparelho.',
+    },
+    reset: {
+      title: 'Escolha uma nova senha',
+      subtitle: 'Digite uma nova senha para sua conta.',
+      newPassword: 'Nova senha',
+      submit: 'Salvar nova senha',
     },
   },
   tabs: {
@@ -143,6 +160,12 @@ const ptBR: TranslationResource = {
     proTitle: 'Desbloqueie o Caloria Fácil Pro',
     proDescription: 'Scans com IA ilimitados, análises avançadas e muito mais.',
     proCta: 'Ver planos',
+    over: 'Acima da meta',
+    setGoal: 'Definir sua meta diária',
+    incompleteMacros:
+      'Alguns alimentos não têm todos os macronutrientes informados, então estes totais podem estar incompletos.',
+    itemCount: 'Itens: {{count}}',
+    previewNotice: 'Modo prévia: conecte o Supabase para registrar refeições reais.',
   },
   macros: {
     protein: 'Proteínas',
@@ -171,6 +194,20 @@ const ptBR: TranslationResource = {
     notSavedTitle: 'Salvar ainda não está disponível',
     notSavedDescription:
       'As refeições serão armazenadas na sua conta quando o banco de dados for conectado na próxima fase. Nada foi salvo.',
+    searchExample: 'ex.: arroz, banana, iogurte',
+    recent: 'Recentes',
+    noRecent: 'Os alimentos que você registrar aparecerão aqui.',
+    noResults: 'Nenhum alimento encontrado',
+    noResultsHint: 'Tente outro termo ou cadastre o alimento com os valores do rótulo.',
+    selected: 'Alimentos selecionados',
+    portion: 'Porção (g)',
+    portionError: 'Informe uma porção entre 1 e {{max}} g.',
+    addPortion: 'Adicionar porção',
+    per100g: '{{kcal}} kcal por 100 g',
+    unknownValues: 'Alguns valores deste alimento são desconhecidos e não são contabilizados.',
+    saveWithTotal: 'Salvar {{count}} item(ns) · {{kcal}} kcal',
+    databaseNote:
+      'A busca inclui os alimentos que você cadastrou e o catálogo compartilhado. A integração com USDA e Open Food Facts está a caminho.',
   },
   scanner: {
     title: 'Scanner IA',
@@ -195,6 +232,11 @@ const ptBR: TranslationResource = {
     empty: 'Nada registrado',
     emptyDescription:
       'Seu histórico aparecerá aqui quando o registro de refeições estiver conectado.',
+    editHint: 'Abre o editor para alterar a porção ou excluir.',
+    delete: 'Excluir',
+    deleteConfirm: 'Excluir este item do seu diário?',
+    freeLimitTitle: 'Plano grátis: últimos {{days}} dias',
+    freeLimitDescription: 'Assine o Pro para ver todo o seu histórico.',
   },
   progress: {
     title: 'Progresso',
@@ -207,6 +249,11 @@ const ptBR: TranslationResource = {
     noDataDescription:
       'Os gráficos mostrarão seu histórico real de peso e calorias quando o acompanhamento estiver conectado.',
     logWeight: 'Registrar peso',
+    current: 'Atual',
+    change: 'Variação no período',
+    caloriesLast7: 'Calorias · últimos 7 dias',
+    noWeightHint: 'Registre seu peso para ver sua evolução.',
+    noCaloriesHint: 'Registre refeições para ver suas calorias diárias.',
   },
   paywall: {
     title: 'Caloria Fácil Pro',
@@ -255,6 +302,12 @@ const ptBR: TranslationResource = {
     exitPreview: 'Sair da prévia',
     bodyData: 'Dados corporais',
     bodyDataDescription: 'Altura, peso e metas poderão ser editados na próxima fase.',
+    proPlan: 'Plano Pro',
+    nutrition: 'Nutrição',
+    goals: 'Metas',
+    weight: 'Peso',
+    editProfile: 'Editar perfil',
+    account: 'Conta',
   },
   settings: {
     title: 'Configurações',
@@ -276,6 +329,172 @@ const ptBR: TranslationResource = {
     about: 'Sobre',
     version: 'Versão',
     environment: 'Ambiente',
+  },
+  errors: {
+    network: 'Sem conexão. Verifique sua internet e tente novamente.',
+    sessionExpired: 'Sua sessão expirou. Entre novamente.',
+    validation: 'Alguns valores são inválidos. Revise-os.',
+    inUse: 'Este item está em uso e não pode ser removido.',
+    forbidden: 'Você não tem permissão para fazer isso.',
+    rateLimited: 'Muitas tentativas. Aguarde um pouco e tente novamente.',
+    generic: 'Algo deu errado. Tente novamente.',
+  },
+  setup: {
+    title: 'Personalize seu plano',
+    progress: 'Etapa {{current}} de {{total}}',
+    skip: 'Pular esta pergunta',
+    finish: 'Salvar e começar',
+    finishWithoutGoal: 'Concluir sem meta por enquanto',
+    notInformed: 'Não informado',
+    useImperial: 'Usar lb / ft',
+    useMetric: 'Usar kg / cm',
+    steps: {
+      goal: { title: 'Qual é o seu objetivo?', subtitle: 'Isso orienta a estimativa de calorias.' },
+      age: {
+        title: 'Qual é a sua idade?',
+        subtitle: 'A idade influencia sua necessidade de energia.',
+      },
+      sex: {
+        title: 'Sexo para o cálculo',
+        subtitle:
+          'A equação que usamos é diferente para corpos femininos e masculinos. Você pode pular e definir a meta manualmente.',
+      },
+      height: {
+        title: 'Qual é a sua altura?',
+        subtitle: 'Usada apenas para estimar sua necessidade.',
+      },
+      weight: {
+        title: 'Qual é o seu peso atual?',
+        subtitle: 'Será o primeiro registro do seu histórico de peso.',
+      },
+      activity: {
+        title: 'Qual é o seu nível de atividade?',
+        subtitle: 'Pense em uma semana típica.',
+      },
+      country: {
+        title: 'Onde você mora?',
+        subtitle: 'Nos ajuda a adaptar alimentos e unidades no futuro.',
+      },
+      language: {
+        title: 'Idioma preferido',
+        subtitle: 'Você pode mudar a qualquer momento nas Configurações.',
+      },
+      units: {
+        title: 'Sistema de medidas',
+        subtitle: 'Escolha como pesos e alturas são exibidos.',
+      },
+      summary: {
+        title: 'Sua meta diária',
+        subtitle: 'Revise a estimativa ou defina sua própria meta.',
+      },
+    },
+    goals: { lose: 'Perder peso', maintain: 'Manter o peso', gain: 'Ganhar peso' },
+    sex: { female: 'Feminino', male: 'Masculino' },
+    activity: {
+      sedentary: { title: 'Sedentário', description: 'Pouco ou nenhum exercício' },
+      light: { title: 'Levemente ativo', description: 'Exercícios 1–3 dias por semana' },
+      moderate: { title: 'Moderadamente ativo', description: 'Exercícios 3–5 dias por semana' },
+      active: { title: 'Muito ativo', description: 'Exercícios intensos 6–7 dias por semana' },
+      very_active: {
+        title: 'Extremamente ativo',
+        description: 'Trabalho físico ou treino duas vezes ao dia',
+      },
+    },
+    fields: {
+      age: 'Idade (anos)',
+      height: 'Altura',
+      weight: 'Peso',
+      country: 'País',
+      countrySearch: 'Buscar país',
+    },
+    errors: {
+      age: 'Informe uma idade entre {{min}} e {{max}}.',
+      height: 'Informe uma altura válida.',
+      weight: 'Informe um peso válido.',
+    },
+  },
+  goals: {
+    title: 'Metas',
+    subtitle: 'Atualize seus dados para recalcular ou defina sua própria meta.',
+    bodyData: 'Seus dados',
+    useEstimate: 'Estimativa',
+    setManually: 'Manual',
+    estimatedTarget: 'Meta diária estimada',
+    perDay: 'dia',
+    methodology:
+      'Equação de Mifflin-St Jeor × fator de atividade. Manutenção estimada: {{maintenance}} kcal.',
+    safetyAdjusted:
+      'Ajustamos esta meta para um mínimo seguro. Dietas muito restritivas só devem ser feitas com acompanhamento profissional.',
+    missingTitle: 'Precisamos de mais informações',
+    missingDescription: 'Para estimar sua necessidade ainda falta:',
+    answer: 'Responder',
+    notAdultTitle: 'Estimativa indisponível',
+    notAdultDescription:
+      'As estimativas de calorias são fornecidas apenas para adultos (18+). Converse com um profissional de saúde sobre suas necessidades.',
+    manualLabel: 'Meta diária de calorias (kcal)',
+    manualHint: 'Mínimo de {{min}} kcal.',
+    manualMacros:
+      'Divisão sugerida: {{protein}} g de proteínas · {{carbs}} g de carboidratos · {{fat}} g de gorduras',
+    save: 'Salvar meta',
+    disclaimer:
+      'Esta é uma estimativa para adultos saudáveis, não uma prescrição médica. Se você está grávida, amamentando, tem menos de 18 anos ou alguma condição de saúde, consulte um profissional.',
+    fields: {
+      sex: 'Sexo',
+      age: 'Idade',
+      heightCm: 'Altura',
+      weightKg: 'Peso',
+      activityLevel: 'Nível de atividade',
+      goal: 'Objetivo',
+    },
+    errors: {
+      required: 'Informe uma meta diária.',
+      tooLow: 'Por segurança, a meta mínima é de {{min}} kcal.',
+      tooHigh: 'Informe um valor de até 10.000 kcal.',
+    },
+  },
+  foods: {
+    create: 'Cadastrar alimento',
+    subtitle: 'Use os valores da tabela nutricional do rótulo.',
+    brand: 'Marca (opcional)',
+    barcode: 'Código de barras (opcional)',
+    per100g: 'Informação nutricional por 100 g',
+    unknownHint:
+      'Deixe um macronutriente em branco se não souber — ele aparecerá como desconhecido, nunca como 0.',
+    save: 'Salvar alimento',
+    mine: 'Meu',
+    errors: {
+      nameRequired: 'Informe o nome do alimento.',
+      caloriesRequired: 'Informe as calorias por 100 g.',
+      caloriesRange: 'As calorias por 100 g devem estar entre 0 e 900.',
+      macroRange: 'Cada macronutriente deve estar entre 0 e 100 g.',
+      macrosExceed: 'Proteínas + carboidratos + gorduras não podem passar de 100 g por 100 g.',
+      barcode: 'O código de barras tem de 6 a 14 dígitos.',
+    },
+  },
+  favorites: {
+    title: 'Favoritas',
+    save: 'Salvar como favorita',
+    saveAlso: 'Salvar também como refeição favorita',
+    saveDescription: 'Salve esta refeição para registrá-la de novo com um toque.',
+    name: 'Nome da favorita',
+    empty: 'Nenhuma refeição favorita ainda',
+    emptyHint: 'Salve uma refeição como favorita no diário ou ao adicionar alimentos.',
+    itemCount: 'Alimentos: {{count}}',
+    delete: 'Excluir favorita',
+  },
+  account: {
+    title: 'Conta',
+    memberSince: 'Membro desde',
+    dangerZone: 'Zona de perigo',
+    deleteSubtitle: 'Remove permanentemente sua conta e todos os seus dados.',
+    deleteTitle: 'Excluir conta?',
+    deleteDescription:
+      'Seu perfil, refeições, alimentos, favoritas, metas e histórico de peso serão excluídos permanentemente. Esta ação não pode ser desfeita.',
+    deleteConfirmWord: 'EXCLUIR',
+    typeToConfirm: 'Digite {{word}} para confirmar',
+    deleteFailed: 'Não foi possível excluir sua conta. Verifique sua conexão e tente novamente.',
+    cancelSubscriptionNote:
+      'Excluir a conta não cancela assinaturas das lojas. Cancele nas configurações da App Store ou do Google Play.',
   },
   units: {
     kg: 'kg',

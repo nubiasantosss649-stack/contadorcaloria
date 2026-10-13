@@ -14,14 +14,16 @@ import {
   SegmentedControl,
   Text,
 } from '@/components/ui';
-import { usePreferences } from '@/features/preferences/preferences-provider';
+import { useAuth } from '@/features/auth/auth-provider';
+import { useSyncedPreferences } from '@/features/preferences/use-synced-preferences';
 import type { ThemePreference } from '@/features/preferences/types';
 import { env } from '@/lib/env';
 import type { UnitSystem } from '@/lib/units';
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
-  const { theme, unitSystem, resolvedLanguage, setPreference } = usePreferences();
+  const { theme, unitSystem, resolvedLanguage, setTheme, setUnitSystem } = useSyncedPreferences();
+  const { isPreview } = useAuth();
   const [notice, setNotice] = useState(false);
 
   const openUrl = (url: string | undefined) => {
@@ -40,7 +42,7 @@ export default function SettingsScreen() {
         <SegmentedControl<ThemePreference>
           accessibilityLabel={t('settings.appearance')}
           value={theme}
-          onChange={(value) => setPreference('theme', value)}
+          onChange={setTheme}
           options={[
             { value: 'system', label: t('settings.themeSystem') },
             { value: 'light', label: t('settings.themeLight') },
@@ -70,7 +72,7 @@ export default function SettingsScreen() {
             key={system}
             title={t(`settings.${system}`)}
             selected={unitSystem === system}
-            onPress={() => setPreference('unitSystem', system)}
+            onPress={() => setUnitSystem(system)}
             testID={`units-${system}`}
           />
         ))}
@@ -94,7 +96,7 @@ export default function SettingsScreen() {
           icon="trash-outline"
           title={t('settings.deleteAccount')}
           destructive
-          onPress={() => setNotice(true)}
+          onPress={() => (isPreview ? setNotice(true) : router.push('/account'))}
         />
       </ListGroup>
 

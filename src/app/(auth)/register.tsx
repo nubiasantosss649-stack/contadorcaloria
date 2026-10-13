@@ -7,6 +7,7 @@ import { AppModal, Button, Screen, ScreenHeader, Text, TextField } from '@/compo
 import { useAuth } from '@/features/auth/auth-provider';
 import { BackendStatus } from '@/features/auth/components/backend-status';
 import { useAuthMessages } from '@/features/auth/use-auth-error';
+import { usePreferences } from '@/features/preferences/preferences-provider';
 import {
   MIN_PASSWORD_LENGTH,
   validateEmail,
@@ -20,6 +21,7 @@ export default function RegisterScreen() {
   const { t } = useTranslation();
   const messages = useAuthMessages();
   const { isBackendConfigured } = useAuth();
+  const { resolvedLanguage } = usePreferences();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,7 +45,7 @@ export default function RegisterScreen() {
     setRequestError(null);
     if (hasErrors) return;
     setLoading(true);
-    const result = await authService.signUp(name, email, password);
+    const result = await authService.signUp(name, email, password, resolvedLanguage);
     setLoading(false);
     if (!result.ok) return setRequestError(messages.request(result.code));
     // Without email confirmation Supabase returns a session and the guard redirects automatically.
@@ -67,6 +69,7 @@ export default function RegisterScreen() {
           value={name}
           onChangeText={setName}
           error={show('name')}
+          testID="register-name"
           autoComplete="name"
           textContentType="name"
           editable={isBackendConfigured}
@@ -78,6 +81,7 @@ export default function RegisterScreen() {
           value={email}
           onChangeText={setEmail}
           error={show('email')}
+          testID="register-email"
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -93,6 +97,7 @@ export default function RegisterScreen() {
           value={password}
           onChangeText={setPassword}
           error={show('password')}
+          testID="register-password"
           autoComplete="new-password"
           textContentType="newPassword"
           editable={isBackendConfigured}
@@ -105,6 +110,7 @@ export default function RegisterScreen() {
           value={confirmation}
           onChangeText={setConfirmation}
           error={show('confirmation')}
+          testID="register-confirmation"
           autoComplete="new-password"
           textContentType="newPassword"
           editable={isBackendConfigured}
@@ -123,6 +129,7 @@ export default function RegisterScreen() {
           onPress={onSubmit}
           loading={loading}
           disabled={!isBackendConfigured}
+          testID="register-submit"
         />
         <Text variant="caption" tone="muted" center>
           {t('auth.register.legal')}

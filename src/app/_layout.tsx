@@ -7,6 +7,7 @@ import { Inter_500Medium } from '@expo-google-fonts/inter/500Medium';
 import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
 import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
 import { Inter_800ExtraBold } from '@expo-google-fonts/inter/800ExtraBold';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, type Theme } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -20,6 +21,7 @@ import { AnimatedSplash } from '@/components/brand/animated-splash';
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { PreferencesProvider, usePreferences } from '@/features/preferences/preferences-provider';
 import { useAppTheme } from '@/hooks/use-app-theme';
+import { queryClient } from '@/lib/query-client';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -29,11 +31,13 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <PreferencesProvider>
-          <AuthProvider>
-            <RootNavigator />
-          </AuthProvider>
-        </PreferencesProvider>
+        <QueryClientProvider client={queryClient}>
+          <PreferencesProvider>
+            <AuthProvider>
+              <RootNavigator />
+            </AuthProvider>
+          </PreferencesProvider>
+        </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
@@ -48,7 +52,7 @@ function RootNavigator() {
     Inter_800ExtraBold,
   });
   const { isHydrated, hasCompletedOnboarding } = usePreferences();
-  const { status } = useAuth();
+  const { status, isRecoveringPassword } = useAuth();
   const { isDark, colors } = useAppTheme();
 
   // If fonts fail to load we still start the app with the system font.
@@ -86,15 +90,22 @@ function RootNavigator() {
             contentStyle: { backgroundColor: colors.background },
           }}
         >
-          <Stack.Protected guard={!hasCompletedOnboarding}>
+          {/* Intro slides, only before the first sign-in on this device. */}
+          <Stack.Protected guard={!hasCompletedOnboarding && !isSignedIn}>
             <Stack.Screen name="(onboarding)" />
           </Stack.Protected>
           <Stack.Protected guard={hasCompletedOnboarding && !isSignedIn}>
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
-          <Stack.Protected guard={hasCompletedOnboarding && isSignedIn}>
+          <Stack.Protected guard={isSignedIn && !isRecoveringPassword}>
             <Stack.Screen name="(app)" />
           </Stack.Protected>
+          {/* After opening a password-recovery link the user must set a new password first. */}
+          <Stack.Protected guard={isSignedIn && isRecoveringPassword}>
+            <Stack.Screen name="reset-password" />
+          </Stack.Protected>
+          {/* Email links (confirmation / recovery) land here in any auth state. */}
+          <Stack.Screen name="auth/callback" />
           <Stack.Screen name="language" options={{ presentation: 'modal' }} />
         </Stack>
         <AnimatedSplash ready={ready} />

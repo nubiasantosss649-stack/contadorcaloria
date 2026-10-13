@@ -17,3 +17,5 @@ export * from './segmented-control';
 export * from './text';
 export * from './text-field';
 export * from './fade-in-view';
+export * from './number-field';
+export * from './state-views';

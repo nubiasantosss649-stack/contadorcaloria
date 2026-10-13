@@ -52,6 +52,7 @@ export default function ForgotPasswordScreen() {
           returnKeyType="send"
           onSubmitEditing={onSubmit}
           editable={isBackendConfigured}
+          testID="forgot-email"
         />
         {requestError ? (
           <Text variant="bodySmall" tone="danger" accessibilityLiveRegion="polite">
@@ -63,6 +64,7 @@ export default function ForgotPasswordScreen() {
           onPress={onSubmit}
           loading={loading}
           disabled={!isBackendConfigured}
+          testID="forgot-submit"
         />
       </View>
 

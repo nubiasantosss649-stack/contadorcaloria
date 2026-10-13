@@ -21,6 +21,8 @@ export default function LoginScreen() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle');
 
   const emailError = submitted ? messages.validation(validateEmail(email)) : null;
   const passwordError = submitted
@@ -35,6 +37,16 @@ export default function LoginScreen() {
     const result = await authService.signIn(email, password);
     setLoading(false);
     // On success the auth listener updates the session and the router guard redirects.
+    if (!result.ok) {
+      setRequestError(messages.request(result.code));
+      setNeedsConfirmation(result.code === 'email_not_confirmed');
+    }
+  };
+
+  const resend = async () => {
+    setResendState('sending');
+    const result = await authService.resendConfirmation(email);
+    setResendState(result.ok ? 'sent' : 'idle');
     if (!result.ok) setRequestError(messages.request(result.code));
   };
 
@@ -89,9 +101,29 @@ export default function LoginScreen() {
       </View>
 
       {requestError ? (
-        <Text variant="bodySmall" tone="danger" center accessibilityLiveRegion="polite">
+        <Text
+          variant="bodySmall"
+          tone="danger"
+          center
+          accessibilityLiveRegion="polite"
+          testID="login-error"
+        >
           {requestError}
         </Text>
+      ) : null}
+      {needsConfirmation ? (
+        <Button
+          label={
+            resendState === 'sent'
+              ? t('auth.login.confirmationResent')
+              : t('auth.login.resendConfirmation')
+          }
+          variant="secondary"
+          size="md"
+          loading={resendState === 'sending'}
+          disabled={resendState === 'sent'}
+          onPress={resend}
+        />
       ) : null}
 
       <Button

@@ -3,31 +3,34 @@
 Contador de calorias com inteligência artificial e assinaturas recorrentes, para **Android e iPhone**
 (lançamento inicial nos EUA, com suporte internacional).
 
-> **Status: Fase 1 — estrutura, arquitetura e design.**
-> Login/cadastro funcionam de verdade **quando o Supabase é configurado**. O scanner de IA, o registro
-> de refeições, o histórico, os gráficos de progresso e as compras ainda **não estão integrados** e as
-> telas indicam isso claramente ("Em desenvolvimento"). Nenhum resultado é simulado.
+> **Status: Fase 2 — autenticação, banco de dados, onboarding e contador de calorias.**
+> Com o Supabase configurado, o app tem cadastro/login reais, questionário inicial, metas estimadas,
+> registro de alimentos, dashboard, histórico, peso, favoritos e exclusão de conta.
+> Ainda **não** estão integrados: scanner de IA, compras/assinatura Pro (Fase 3), notificações e
+> importação dos bancos USDA / Open Food Facts (adaptadores prontos, sem chamada no app).
+> Essas áreas mostram "Em desenvolvimento". Nenhum dado nutricional é inventado.
 
 ## Stack
 
-| Área        | Tecnologia                                                                  |
-| ----------- | --------------------------------------------------------------------------- |
-| App         | Expo SDK 57 · React Native 0.86 · React 19.2 · TypeScript 6 (strict)        |
-| Navegação   | Expo Router (rotas por arquivo, `Stack.Protected` para rotas protegidas)    |
-| Estilo      | NativeWind 4 (Tailwind CSS 3) · modo claro/escuro                           |
-| Animações   | React Native Reanimated 4 + Worklets                                        |
-| i18n        | i18next + react-i18next + expo-localization (en-US, pt-BR, es)              |
-| Backend     | Supabase (Auth + Postgres) — cliente pronto, aguardando credenciais         |
-| Assinaturas | Interface pronta para RevenueCat (Apple IAP / Google Play Billing)          |
-| Qualidade   | ESLint (eslint-config-expo) · Prettier · Jest (jest-expo) · Testing Library |
-| Builds      | EAS Build (`eas.json` com perfis development / preview / production)        |
+| Área        | Tecnologia                                                                   |
+| ----------- | ---------------------------------------------------------------------------- |
+| App         | Expo SDK 57 · React Native 0.86 · React 19.2 · TypeScript 6 (strict)         |
+| Navegação   | Expo Router (`Stack.Protected` para rotas protegidas e questionário inicial) |
+| Estilo      | NativeWind 4 (Tailwind CSS 3) · modo claro/escuro                            |
+| Animações   | React Native Reanimated 4 + Worklets                                         |
+| i18n        | i18next + react-i18next + expo-localization (en-US, pt-BR, es)               |
+| Dados       | Supabase (Auth + Postgres + RLS) · TanStack Query (cache e atualização)      |
+| Sessão      | Criptografada: chave AES no Keychain/Keystore (expo-secure-store)            |
+| Assinaturas | Interface pronta para RevenueCat (Apple IAP / Google Play Billing) — Fase 3  |
+| Qualidade   | ESLint · Prettier · Jest + Testing Library · testes SQL com PGlite           |
+| Builds      | EAS Build (`eas.json` com perfis development / preview / production)         |
 
 ## Requisitos
 
 - **Node.js 20 LTS ou 22 LTS** e npm
-- Celular com **Expo Go** (App Store / Google Play) — versão compatível com o SDK 57 — ou um emulador
-- Opcional: Android Studio (emulador Android) e/ou Xcode (simulador iOS, só no macOS)
-- Opcional: conta Expo (`npx eas-cli@latest login`) para builds na nuvem
+- Celular com **Expo Go** (versão compatível com o SDK 57) ou um emulador
+- Um projeto **Supabase** (gratuito) para usar login e dados reais
+- Opcional: Android Studio / Xcode (emuladores) e conta Expo para builds na nuvem
 
 ## Como executar
 
@@ -35,154 +38,175 @@ Contador de calorias com inteligência artificial e assinaturas recorrentes, par
 git clone <url-do-repositorio>
 cd contadorcaloria
 npm install
-cp .env.example .env      # preencha as variáveis (ver "Variáveis de ambiente")
-npm start                 # inicia o Metro bundler e mostra um QR code
+cp .env.example .env      # preencha URL e chave do Supabase (ver abaixo)
+npm start                 # Metro bundler + QR code
 ```
 
-### No computador
-
-- **Navegador:** pressione `w` no terminal do `npm start` (ou `npm run web`).
+- **Navegador:** `w` no terminal do `npm start` (ou `npm run web`).
 - **Emulador Android:** abra um emulador no Android Studio e pressione `a`.
 - **Simulador iOS (macOS):** pressione `i`.
 
-### No celular (Expo Go)
+### Testar no celular (Android e iPhone)
 
-1. Instale o **Expo Go** no celular.
-2. Deixe celular e computador na **mesma rede Wi-Fi**.
-3. Rode `npm start` e escaneie o QR code (Android: pelo app Expo Go; iPhone: pela câmera).
-4. Se a rede bloquear a conexão (Wi-Fi corporativo, VPN), use `npx expo start --tunnel`.
+1. Instale o **Expo Go** (Google Play / App Store).
+2. Celular e computador na **mesma rede Wi-Fi** (ou use `npx expo start --tunnel`).
+3. `npm start` e escaneie o QR code (Android: dentro do Expo Go; iPhone: pela câmera).
+4. Roteiro sugerido:
+   1. Criar conta → confirmar o e-mail **no próprio celular** (o link abre o app).
+   2. Responder o questionário (ou pular perguntas) → ver a meta estimada → salvar.
+   3. Home → `+` em uma refeição → **Cadastrar alimento** (valores do rótulo) → informar a porção em
+      gramas → salvar. Conferir consumido/restante/macros no dashboard.
+   4. Tocar no item → mudar gramas ou excluir → o dashboard atualiza sozinho.
+   5. Diário: navegar pelos dias (plano grátis limita a 7 dias); salvar uma refeição como favorita.
+   6. Progresso → registrar peso. Perfil → editar nome, metas, idioma, unidades, conta.
+   7. Sair → "Esqueceu a senha?" → abrir o link do e-mail → definir nova senha.
 
-> Tudo o que a Fase 1 usa está incluído no Expo Go. Quando entrarem módulos nativos extras
-> (RevenueCat, câmera avançada), será necessário um **development build** (veja "Builds").
+Tudo o que a Fase 2 usa está incluído no Expo Go. Para testar **links de e-mail em builds** (não Expo
+Go), gere um development build: `npx eas-cli@latest build --profile development --platform android|ios`.
 
 ### Sem Supabase configurado
 
-Sem as variáveis do Supabase, as telas de login/cadastro mostram o aviso **"Backend não configurado"** e
-os formulários ficam desativados. Em modo de desenvolvimento aparece o botão
-**"Explorar a interface (prévia)"**, que abre as telas autenticadas sem conta, com o selo
-"Modo prévia". Esse botão **não existe em builds de produção** e nada é salvo.
+As telas de login mostram **"Backend não configurado"**. Em desenvolvimento existe o botão
+**"Explorar a interface (prévia)"**, que abre as telas sem conta e **sem salvar nada** (os formulários
+de dados ficam desativados). Ele não existe em builds de produção.
 
 ## Variáveis de ambiente
 
-Copie `.env.example` para `.env`. Variáveis `EXPO_PUBLIC_*` vão para o app compilado — **nunca** coloque
-segredos (ex.: service role key) nelas.
+Copie `.env.example` para `.env`. Variáveis `EXPO_PUBLIC_*` vão para dentro do app — **nunca** coloque
+segredos nelas (service role key, chaves de API privadas).
 
-| Variável                             | Uso                                                  |
-| ------------------------------------ | ---------------------------------------------------- |
-| `EXPO_PUBLIC_APP_ENV`                | `development` · `preview` · `production`             |
-| `EXPO_PUBLIC_SUPABASE_URL`           | URL do projeto Supabase                              |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY`      | Chave pública (anon/publishable)                     |
-| `EXPO_PUBLIC_REVENUECAT_IOS_KEY`     | Fase 2 — chave pública do RevenueCat (iOS)           |
-| `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` | Fase 2 — chave pública do RevenueCat (Android)       |
-| `EXPO_PUBLIC_TERMS_URL`              | URL dos Termos de Uso (exigido pela App Store)       |
-| `EXPO_PUBLIC_PRIVACY_URL`            | URL da Política de Privacidade (exigido pelas lojas) |
+| Variável                             | Obrigatória | Uso                                      |
+| ------------------------------------ | ----------- | ---------------------------------------- |
+| `EXPO_PUBLIC_SUPABASE_URL`           | Sim         | URL do projeto Supabase                  |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY`      | Sim         | Chave pública (anon / publishable)       |
+| `EXPO_PUBLIC_APP_ENV`                | Não         | `development` · `preview` · `production` |
+| `EXPO_PUBLIC_TERMS_URL`              | Para lojas  | URL dos Termos de Uso                    |
+| `EXPO_PUBLIC_PRIVACY_URL`            | Para lojas  | URL da Política de Privacidade           |
+| `EXPO_PUBLIC_REVENUECAT_IOS_KEY`     | Fase 3      | Chave pública do RevenueCat (iOS)        |
+| `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` | Fase 3      | Chave pública do RevenueCat (Android)    |
 
-Após alterar o `.env`, reinicie com `npm run start:clear`.
+Depois de alterar o `.env`, reinicie com `npm run start:clear`. Para builds EAS, cadastre as mesmas
+variáveis no EAS (`npx eas-cli@latest env:create`) — o `.env` local não é enviado.
 
-## Configurar o Supabase
+## Conectar o Supabase
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
-2. Em **Project Settings → API**, copie a URL e a chave anon para o `.env`.
-3. Rode a migração inicial `supabase/migrations/0001_init.sql` (SQL Editor ou `supabase db push`).
-   Ela cria a tabela `profiles` com RLS e um gatilho que cria o perfil no cadastro.
-4. Em **Authentication → URL Configuration**, adicione `caloriafacil://**` às Redirect URLs
-   (links de confirmação de e-mail e de redefinição de senha).
-5. Depois que o projeto existir, gere os tipos reais:
-   `npx supabase gen types typescript --project-id <ref> > src/types/database.ts`
+2. **Project Settings → API**: copie a _Project URL_ e a chave _anon/publishable_ para o `.env`.
+3. **Aplique as migrações**, em ordem (SQL Editor → cole e execute cada arquivo, ou use a CLI):
+   - `supabase/migrations/0001_init.sql`
+   - `supabase/migrations/0002_phase2_core.sql`
+
+   Com a CLI: `npx supabase link --project-ref <ref>` e `npx supabase db push`.
+
+4. **Authentication → URL Configuration → Redirect URLs**, adicione:
+   - `caloriafacil://**` (builds do app)
+   - `exp://**` (Expo Go durante o desenvolvimento)
+   - `http://localhost:8081/**` (versão web local, opcional)
+5. **Authentication → Providers → Email**: mantenha _Confirm email_ ligado (recomendado).
+6. (Opcional, recomendado para produção) Em **Authentication → Email Templates**, configure um SMTP
+   próprio — o SMTP padrão do Supabase tem limite baixo de envios.
+7. Rode o app, crie uma conta e confirme o e-mail.
+
+Para conceder Pro manualmente a um usuário de teste (somente pelo painel/SQL, nunca pelo app):
+
+```sql
+insert into public.user_entitlements (user_id, entitlement, source)
+values ('<uuid-do-usuario>', 'pro', 'manual_grant');
+```
+
+### Banco de dados
+
+| Tabela                                   | Conteúdo                                                          |
+| ---------------------------------------- | ----------------------------------------------------------------- |
+| `profiles`                               | nome, e-mail, idioma, país, conclusão do questionário             |
+| `user_preferences`                       | unidades, tema, preferências de notificação                       |
+| `health_profiles`                        | objetivo, sexo, ano de nascimento, altura, nível de atividade     |
+| `nutrition_goals`                        | meta diária de calorias e macros (estimada ou manual)             |
+| `foods`                                  | catálogo compartilhado (USDA/OFF) + alimentos privados do usuário |
+| `meal_entries` / `meal_items`            | refeições e porções; calorias/macros calculadas por gatilho       |
+| `favorite_meals` / `favorite_meal_items` | refeições favoritas                                               |
+| `weight_logs`                            | histórico de peso                                                 |
+| `user_entitlements`                      | acesso Pro — **somente o servidor** (service role) escreve        |
+
+Segurança aplicada no banco:
+
+- **RLS em todas as tabelas**; cada usuário só lê/escreve as próprias linhas (`auth.uid()`).
+- Alimentos do usuário são privados; o catálogo é somente leitura.
+- Colunas sensíveis protegidas por permissões por coluna (e-mail, valores calculados, assinatura).
+- Calorias/macros de cada porção são calculadas **no banco** a partir do alimento e dos gramas.
+- Histórico: plano grátis vê 7 dias; Pro é verificado no servidor (`has_pro_access()`).
+- Restrições de validação (peso 20–500 kg, meta ≥ 1200 kcal, macros ≤ 100 g por 100 g etc.).
+- `delete_own_account()` exclui o usuário e **todos** os dados pessoais em cascata.
 
 ## Scripts
 
-| Comando               | Descrição                                            |
-| --------------------- | ---------------------------------------------------- |
-| `npm start`           | Inicia o servidor de desenvolvimento                 |
-| `npm run start:clear` | Inicia limpando o cache do Metro                     |
-| `npm run web`         | Abre no navegador                                    |
-| `npm run typecheck`   | TypeScript (`tsc --noEmit`)                          |
-| `npm run lint`        | ESLint                                               |
-| `npm run format`      | Prettier (formata)                                   |
-| `npm test`            | Testes (Jest)                                        |
-| `npm run validate`    | typecheck + lint + format:check + testes             |
-| `npm run doctor`      | `expo-doctor` (verifica dependências e configuração) |
+| Comando             | Descrição                                                   |
+| ------------------- | ----------------------------------------------------------- |
+| `npm start`         | Servidor de desenvolvimento                                 |
+| `npm run typecheck` | TypeScript                                                  |
+| `npm run lint`      | ESLint                                                      |
+| `npm test`          | Testes do app (Jest)                                        |
+| `npm run test:db`   | Testes do banco: migrações reais + RLS em Postgres (PGlite) |
+| `npm run validate`  | Tudo acima + verificação de formatação                      |
+| `npm run doctor`    | `expo-doctor`                                               |
 
 ## Estrutura
 
 ```
 src/
-  app/                      Rotas (Expo Router)
-    _layout.tsx             Providers, fontes, splash, guardas de rota
-    language.tsx            Seleção de idioma (acessível de qualquer lugar)
-    (onboarding)/           Boas-vindas, apresentação das funcionalidades
-    (auth)/                 Login, cadastro, recuperar senha
-    (app)/                  Área autenticada
-      (tabs)/               Home, Food Diary, AI Scanner, Progress, Profile
-      add-meal.tsx          Adicionar refeição (modal)
-      paywall.tsx           Assinatura Pro (modal)
-      settings.tsx          Configurações
-  components/
-    ui/                     Design system: Button, TextField, Card, ProgressBar, ProgressRing,
-                            BarChart, AppModal, SegmentedControl, ListItem, Badge, Screen…
-    brand/                  Logo e splash animada
-  features/                 Módulos de domínio (auth, preferences, subscriptions, meals)
-  services/                 Integrações externas (auth Supabase, compras)
-  hooks/                    Hooks compartilhados (tema, saudação)
-  lib/                      env, supabase, i18n, unidades, validação, storage, datas
-  constants/                Paleta e tokens de tema
-  locales/                  en-US (fonte da verdade), pt-BR, es
-  types/                    Tipos globais (banco, i18next)
-assets/                     Ícone, splash, ícones adaptativos Android
-supabase/migrations/        SQL do banco
-tests/                      Testes Jest
+  app/                       Rotas (Expo Router)
+    _layout.tsx              Providers, guardas (intro → login → app / nova senha)
+    auth/callback.tsx        Destino dos links de e-mail (confirmação e recuperação)
+    reset-password.tsx       Definir nova senha
+    (onboarding)/            Boas-vindas e apresentação (antes do login)
+    (auth)/                  Login, cadastro, recuperar senha
+    (app)/                   Área autenticada
+      setup.tsx              Questionário inicial (obrigatório 1x por conta)
+      (tabs)/                Home, Food Diary, AI Scanner, Progress, Profile
+      add-meal.tsx           Busca, recentes, favoritas, porções em gramas
+      create-food.tsx        Cadastro manual de alimento
+      goals.tsx              Recalcular/editar metas
+      edit-profile.tsx, account.tsx, settings.tsx, paywall.tsx
+  features/                  Domínios: account, auth, meals, preferences, subscriptions
+  services/                  Supabase (auth, conta, alimentos, refeições) + provedores USDA/OFF
+  lib/                       nutrition (cálculos), energy (estimativa), datas, unidades, i18n…
+  locales/                   en-US (fonte), pt-BR, es
+supabase/migrations/         SQL (0001, 0002)
+tests/                       Jest (lógica e telas) · tests/db (SQL/RLS)
 ```
 
-### Decisões de arquitetura
+### Metodologia da meta calórica
 
-- **Rotas protegidas:** `Stack.Protected` no layout raiz decide entre onboarding → autenticação → app.
-  Concluir o onboarding ou entrar/sair redireciona automaticamente.
-- **i18n tipado:** `src/locales/en-US.ts` é a fonte das chaves; `pt-BR` e `es` são tipados contra ela,
-  então uma chave faltando quebra o `typecheck`. Um teste também compara chaves e placeholders.
-  Nenhum texto de interface fica fixo nos componentes.
-- **Idioma:** detectado pelo aparelho (`expo-localization`) — qualquer variante de português → pt-BR,
-  de espanhol → es, demais → en-US. A escolha manual é salva no aparelho.
-- **Unidades:** valores são sempre armazenados em métrico (kg, cm, kcal) e convertidos na exibição.
-  Padrão imperial para regiões dos EUA, métrico para as demais; o usuário pode trocar nas Configurações.
-- **Tema:** claro, escuro ou do sistema (persistido).
-- **Assinaturas:** `src/features/subscriptions/plans.ts` define os planos com preços **demonstrativos**;
-  `src/services/purchases-service.ts` define a interface que o RevenueCat implementará. Hoje o serviço
-  sempre responde "indisponível" — nenhuma compra é simulada.
+- **Mifflin-St Jeor** (TMB) × fator de atividade (1,2 – 1,9) = manutenção estimada.
+- Objetivo: perder −500 kcal, manter 0, ganhar +300 kcal.
+- **Proteções:** mínimo de 1200 kcal (mulheres) / 1500 kcal (homens), déficit máximo de 25% da
+  manutenção, meta manual nunca abaixo de 1200 kcal (também imposto no banco), sem estimativa para
+  menores de 18 anos.
+- Macros sugeridos: 25% proteína, 45% carboidrato, 30% gordura.
+- Faltando dados (ex.: sexo), o app explica o que falta e permite definir a meta manualmente.
+- O app sempre apresenta como **estimativa**, não prescrição médica.
+
+### Cálculo nutricional
+
+`valor por 100 g × gramas ÷ 100`, arredondado a 1 casa decimal (mesma regra no app e no banco).
+Ex.: 200 kcal/100 g × 150 g = **300 kcal**. Nutriente desconhecido fica **vazio** (nunca 0) e o
+dashboard avisa que o total pode estar incompleto.
+
+## Apple Sign-In e Google Sign-In (preparado)
+
+`authService.signInWithProvider('apple' | 'google')` já existe e hoje retorna "não disponível".
+Para ativar: habilitar os provedores no Supabase, adicionar `expo-apple-authentication` e o SDK do
+Google Sign-In (exigem development build) e trocar a implementação por `signInWithIdToken`.
+A Apple exige Sign in with Apple se houver outro login social no iOS.
 
 ## Builds Android e iOS (EAS)
 
 ```bash
-npm install -g eas-cli          # ou use npx eas-cli@latest
-eas login
-eas init                        # vincula o projeto à sua conta (grava o projectId no app.json)
-eas build --profile development --platform android   # development build (APK interno)
-eas build --profile preview --platform all           # build interna para testadores
-eas build --profile production --platform all        # build para as lojas
-eas submit --platform ios|android
+npx eas-cli@latest login
+npx eas-cli@latest init
+npx eas-cli@latest build --profile development --platform android
+npx eas-cli@latest build --profile preview --platform all
+npx eas-cli@latest build --profile production --platform all
 ```
 
-Configure as variáveis `EXPO_PUBLIC_*` também no EAS (`eas env:create` ou no painel expo.dev) para cada
-ambiente — o `.env` local não é enviado para builds na nuvem.
-
-Antes do primeiro build de produção, confirme o identificador `com.caloriafacil.ai`
-(`ios.bundleIdentifier` / `android.package` em `app.json`) — ele não pode ser alterado depois de publicado.
-
-## Dependências externas pendentes
-
-| Item                                          | Situação                                                            |
-| --------------------------------------------- | ------------------------------------------------------------------- |
-| Projeto Supabase + credenciais                | **Pendente** — sem ele login/cadastro ficam desativados             |
-| Conta Expo / EAS (`eas init`)                 | **Pendente** — necessária para builds na nuvem                      |
-| Apple Developer Program / Google Play Console | **Pendente** — publicação e produtos de assinatura                  |
-| RevenueCat (projeto, produtos, chaves)        | **Pendente — Fase 2**                                               |
-| Serviço de IA para o scanner de fotos         | **Pendente** — a definir                                            |
-| Banco de alimentos (busca)                    | **Pendente** — a definir                                            |
-| Termos de Uso e Política de Privacidade       | **Pendente** — URLs exigidas pelas lojas                            |
-| Ícone e splash definitivos                    | Arte provisória gerada nesta fase; substituir pela identidade final |
-
-## Próximas fases (sugestão)
-
-1. Perfil corporal e cálculo de meta calórica; persistência de refeições no Supabase.
-2. RevenueCat + development build; paywall com preços reais vindos das lojas.
-3. Scanner de IA (câmera + análise de imagem), histórico e gráficos com dados reais.
+Confirme o identificador `com.caloriafacil.ai` em `app.json` antes do primeiro build de produção.

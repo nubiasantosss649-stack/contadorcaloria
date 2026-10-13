@@ -91,15 +91,13 @@ export const mealsService = {
       entryId = entry.id;
       created = true;
     }
-    const { error } = await client
-      .from('meal_items')
-      .insert(
-        items.map((item) => ({
-          meal_entry_id: entryId,
-          food_id: item.foodId,
-          quantity_grams: item.grams,
-        })),
-      );
+    const { error } = await client.from('meal_items').insert(
+      items.map((item) => ({
+        meal_entry_id: entryId,
+        food_id: item.foodId,
+        quantity_grams: item.grams,
+      })),
+    );
     if (error) {
       // Compensate so we don't leave an empty meal behind.
       if (created) await client.from('meal_entries').delete().eq('id', entryId);
@@ -176,15 +174,13 @@ export const favoritesService = {
         .select('id')
         .single(),
     );
-    const { error } = await client
-      .from('favorite_meal_items')
-      .insert(
-        items.map((item) => ({
-          favorite_meal_id: favorite.id,
-          food_id: item.foodId,
-          quantity_grams: item.grams,
-        })),
-      );
+    const { error } = await client.from('favorite_meal_items').insert(
+      items.map((item) => ({
+        favorite_meal_id: favorite.id,
+        food_id: item.foodId,
+        quantity_grams: item.grams,
+      })),
+    );
     if (error) {
       await client.from('favorite_meals').delete().eq('id', favorite.id);
       throw toServiceError(error);

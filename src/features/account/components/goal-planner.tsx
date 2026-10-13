@@ -56,9 +56,7 @@ export function GoalPlanner({
   const { t } = useTranslation();
   const { colors } = useAppTheme();
   const estimate = useMemo(() => estimateDailyCalories(inputs), [inputs]);
-  const [mode, setMode] = useState<'estimate' | 'manual'>(
-    estimate.status === 'ok' && !currentTarget ? 'estimate' : 'manual',
-  );
+  const [mode, setMode] = useState<'estimate' | 'manual'>(currentTarget ? 'manual' : 'estimate');
   const [manual, setManual] = useState<number | null>(currentTarget ?? null);
   const [submitted, setSubmitted] = useState(false);
   const manualError = validateManualCalorieTarget(manual);
